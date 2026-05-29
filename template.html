@@ -1,0 +1,384 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrainOfThought</title>
+    <style>
+        /* General Reset */
+        body, p, h1, h2, h3, h4, ul, li {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 24px 16px;
+        }
+        a {
+            color: #4f46e5;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .container {
+            max-width: 740px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            padding: 36px 24px;
+            text-align: center;
+            color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 4px;
+        }
+        .date-line {
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Greeting card */
+        .greeting-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-left: 5px solid #4f46e5;
+            padding: 20px 24px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 15px;
+            color: #475569;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Sidequest Card */
+        .sidequest-card {
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+            border-left: 5px solid #d97706;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .sidequest-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .sidequest-icon {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+        .sidequest-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #b45309;
+        }
+        .sidequest-query {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        .sidequest-leads {
+            font-size: 13px;
+            color: #475569;
+            padding-left: 20px;
+        }
+        .sidequest-leads li {
+            list-style-type: disc;
+            margin-bottom: 6px;
+        }
+
+        /* Dashboard Grid */
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .col-left {
+            flex: 1 1 360px;
+            min-width: 320px;
+        }
+        .col-right {
+            flex: 1 1 320px;
+            min-width: 300px;
+        }
+
+        /* Cards */
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+        }
+        .card-icon {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+        }
+
+        /* Article list */
+        .article {
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .article:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .tag {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+        }
+        .tag-read { background-color: #e0e7ff; color: #4338ca; }
+        .tag-local { background-color: #ecfdf5; color: #047857; }
+        .tag-medicine { background-color: #fdf2f8; color: #be185d; }
+        .tag-tech { background-color: #fff7ed; color: #c2410c; }
+        
+        .article h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+        .article h3 a {
+            color: #1e293b;
+        }
+        .article h3 a:hover {
+            color: #4f46e5;
+            text-decoration: none;
+        }
+        .article p {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* Deal Items */
+        .deal-item {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .deal-item:last-child {
+            margin-bottom: 0;
+        }
+        .deal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 4px;
+        }
+        .deal-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-right: 8px;
+        }
+        .deal-title a {
+            color: #334155;
+        }
+        .deal-badge {
+            background-color: #ef4444;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .deal-prices {
+            font-size: 12px;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+        .price-used {
+            font-weight: 700;
+            color: #0f766e;
+        }
+        .price-new {
+            text-decoration: line-through;
+            color: #94a3b8;
+            margin-left: 6px;
+        }
+        
+        /* Feedback Controls */
+        .feedback-container {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        .feedback-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            color: #64748b;
+            font-size: 10px;
+            text-decoration: none !important;
+        }
+        .feedback-btn:hover {
+            background-color: #f1f5f9;
+            color: #334155;
+            border-color: #cbd5e1;
+        }
+
+        /* Empty states */
+        .empty-state {
+            font-size: 13px;
+            color: #94a3b8;
+            font-style: italic;
+            text-align: center;
+            padding: 16px 0;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 28px 24px;
+            font-size: 12px;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo Header -->
+        <div class="header">
+            <div class="logo">TrainOfThought</div>
+            <div class="date-line">{{ date }}</div>
+        </div>
+
+        <!-- AI Curation Greeting -->
+        <div class="greeting-card">
+            {{ greeting }}
+        </div>
+
+        <!-- Sidequest Card (Conditional) -->
+        {{ sidequest_section }}
+
+        <!-- Dashboard Layout Grid -->
+        <div class="grid">
+            
+            <!-- Left Column -->
+            <div class="col-left">
+                <!-- Suggested Reading Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">📖</span>
+                        <span class="card-title">Suggested Reading</span>
+                    </div>
+                    {{ newsletters_section }}
+                </div>
+
+                <!-- Medicine & Research Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">🔬</span>
+                        <span class="card-title">Medicine & Research</span>
+                    </div>
+                    {{ medicine_section }}
+                </div>
+
+                <!-- Local News Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">📍</span>
+                        <span class="card-title">Local News (Boston & Cornell)</span>
+                    </div>
+                    {{ local_news_section }}
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-right">
+                <!-- Curated Deals & Hobbies Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">💰</span>
+                        <span class="card-title">Curated Deals & Hobbies</span>
+                    </div>
+                    {{ deals_section }}
+                </div>
+
+                <!-- Tech & Finance Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">📈</span>
+                        <span class="card-title">Tech & Finance</span>
+                    </div>
+                    {{ tech_finance_section }}
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Curated automatically for you by TrainOfThought.</p>
+            <p style="margin-top: 8px;">To manage settings or adjust weights, edit <code>config.json</code> in your repository.</p>
+        </div>
+    </div>
+</body>
+</html>

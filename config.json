@@ -1,0 +1,87 @@
+{
+  "user": {
+    "name": "User",
+    "email": "jungd@email.com",
+    "timezone": "US/Eastern",
+    "github_username": "jungd",
+    "github_repo": "trainofthought",
+    "liked_authors": [
+      "Hank Green",
+      "John Green",
+      "Cate Hall",
+      "Henrik Karlsson",
+      "Kareem Abdul-Jabbar",
+      "Moon Lists"
+    ],
+    "noted_interests": [
+      "tech",
+      "medicine",
+      "finance",
+      "skincare",
+      "volleyball",
+      "rock climbing",
+      "pokemon",
+      "boston celtics",
+      "physical books"
+    ],
+    "weights": {
+      "interests": {
+        "tech": 1.0,
+        "medicine": 1.0,
+        "finance": 1.0,
+        "skincare": 1.0,
+        "volleyball": 1.0,
+        "rock climbing": 1.0,
+        "pokemon": 1.0,
+        "boston celtics": 1.0,
+        "physical books": 1.0
+      },
+      "authors": {
+        "Hank Green": 1.0,
+        "John Green": 1.0,
+        "Cate Hall": 1.0,
+        "Henrik Karlsson": 1.0,
+        "Kareem Abdul-Jabbar": 1.0,
+        "Moon Lists": 1.0
+      }
+    }
+  },
+  "sidequest": {
+    "enabled": true,
+    "query": "2 Chicago Noah Kahan tickets",
+    "description": "Looking for tickets, resale alerts, or local tour news"
+  },
+  "sources": {
+    "discovery_newsletters": [
+      { "name": "Farnam Street", "url": "https://fs.blog/rss" },
+      { "name": "Astral Codex Ten", "url": "https://www.astralcodexten.com/feed" }
+    ],
+    "discovery_books": [
+      { "name": "Book Tours & Releases", "url": "https://news.google.com/rss/search?q=intitle:%22book+release%22+OR+intitle:%22new+book%22+OR+intitle:%22book+tour%22&hl=en-US&gl=US&ceid=US:en" },
+      { "name": "Liked Authors Book News", "url": "https://news.google.com/rss/search?q=%22Hank+Green%22+OR+%22John+Green%22+OR+%22Cate+Hall%22+OR+%22Henrik+Karlsson%22+OR+%22Kareem+Abdul-Jabbar%22+OR+%22Moon+Lists%22&hl=en-US&gl=US&ceid=US:en" }
+    ],
+    "local_news": [
+      { "name": "Cornell Daily Sun (Google News)", "url": "https://news.google.com/rss/search?q=site:cornellsun.com&hl=en-US&gl=US&ceid=US:en" },
+      { "name": "The Ithaca Voice", "url": "https://ithacavoice.org/feed/" },
+      { "name": "Boston.com Local", "url": "https://www.boston.com/tag/local-news/feed/" },
+      { "name": "Boston Herald (Google News)", "url": "https://news.google.com/rss/search?q=site:bostonherald.com&hl=en-US&gl=US&ceid=US:en" }
+    ],
+    "medicine": [
+      { "name": "NEJM (Google News)", "url": "https://news.google.com/rss/search?q=site:nejm.org&hl=en-US&gl=US&ceid=US:en" },
+      { "name": "JAMA (Google News)", "url": "https://news.google.com/rss/search?q=site:jamanetwork.com/journals/jama&hl=en-US&gl=US&ceid=US:en" }
+    ],
+    "tech_finance": [
+      { "name": "Hacker News", "url": "https://news.ycombinator.com/rss" },
+      { "name": "TechCrunch", "url": "https://techcrunch.com/feed/" },
+      { "name": "Yahoo Finance", "url": "https://finance.yahoo.com/news/rssindex" }
+    ],
+    "fallback_deals": [
+      { "name": "Slickdeals Frontpage", "url": "https://slickdeals.net/newsearch.php?mode=frontpage&searcharea=deals&searchin=first&rss=1" },
+      { "name": "Reddit Travel Deals", "url": "https://www.reddit.com/r/traveldeals/.rss" }
+    ]
+  },
+  "filters": {
+    "deal_keywords": ["skincare", "moisturizer", "sunscreen", "celtics", "boston celtics", "travel", "flight", "hotel", "electronics", "software", "pokemon", "book release", "book signing", "book tour", "student discount", "unidays", "student beans", "google one", "grubhub", "prime student", "cornell discount"],
+    "exclude_keywords": ["gaming", "switch console", "ps5 game", "nintendo game", "xbox", "sports news", "nba standings", "celtics game recap"]
+  }
+}

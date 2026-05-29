@@ -1,0 +1,31 @@
+name: TrainOfThought Biweekly Run
+
+on:
+  schedule:
+    # 9:00 AM EST is 13:00 UTC during Standard Time, or 14:00 UTC during Daylight Saving.
+    # To run consistently, we target 13:00 UTC every Tuesday (2) and Friday (5)
+    - cron: '0 13 * * 2,5'
+  workflow_dispatch:
+    # Allows manual trigger from GitHub UI at any time
+
+jobs:
+  run-digest:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Run Curator Engine
+        env:
+          GEMINI_API_KEY: ${{ secrets.GEMINI_API_KEY }}
+          RESEND_API_KEY: ${{ secrets.RESEND_API_KEY }}
+          SMTP_SERVER: ${{ secrets.SMTP_SERVER }}
+          SMTP_PORT: ${{ secrets.SMTP_PORT }}
+          SMTP_USER: ${{ secrets.SMTP_USER }}
+          SMTP_PASS: ${{ secrets.SMTP_PASS }}
+        run: python curator.py

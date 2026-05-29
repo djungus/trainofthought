@@ -1,0 +1,31 @@
+name: PulseDigest Feedback Loop
+
+on:
+  repository_dispatch:
+    types: [feedback]
+
+jobs:
+  apply-feedback:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout Repository
+        uses: actions/checkout@v4
+
+      - name: Set up Python
+        uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+
+      - name: Apply Feedback Weights
+        env:
+          FEEDBACK_TYPE: ${{ github.event.client_payload.type }}
+          FEEDBACK_TARGET: ${{ github.event.client_payload.target }}
+          FEEDBACK_VAL: ${{ github.event.client_payload.feedback }}
+        run: python apply_feedback.py
+
+      - name: Commit & Push Preference Weights
+        run: |
+          git config --local user.email "actions@github.com"
+          git config --local user.name "GitHub Actions"
+          git add config.json
+          git diff --quiet && git diff --staged --quiet || (git commit -m "Update preferences: weight adjustment for ${{ github.event.client_payload.type }} '${{ github.event.client_payload.target }}'" && git push)

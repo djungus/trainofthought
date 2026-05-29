@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>PulseDigest — Feedback Recorded</title>
+    <style>
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, sans-serif;
+            background: linear-gradient(135deg, #0f172a, #1e1b4b);
+            color: #f8fafc;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+            margin: 0;
+        }
+        .card {
+            background: rgba(30, 41, 59, 0.7);
+            backdrop-filter: blur(16px);
+            border: 1px solid rgba(255, 255, 255, 0.1);
+            border-radius: 24px;
+            padding: 40px 32px;
+            max-width: 480px;
+            width: 100%;
+            text-align: center;
+            box-shadow: 0 20px 25px -5px rgb(0 0 0 / 0.5), 0 8px 10px -6px rgb(0 0 0 / 0.5);
+        }
+        h1 {
+            font-size: 24px;
+            font-weight: 800;
+            margin-bottom: 12px;
+            letter-spacing: -0.025em;
+            background: linear-gradient(to right, #818cf8, #c084fc);
+            -webkit-background-clip: text;
+            -webkit-text-fill-color: transparent;
+        }
+        p {
+            color: #94a3b8;
+            font-size: 15px;
+            line-height: 1.6;
+            margin-bottom: 24px;
+        }
+        .icon {
+            font-size: 48px;
+            margin-bottom: 16px;
+        }
+        .badge {
+            display: inline-block;
+            background: rgba(99, 102, 241, 0.2);
+            color: #a5b4fc;
+            font-size: 12px;
+            font-weight: 600;
+            padding: 4px 12px;
+            border-radius: 9999px;
+            margin-bottom: 20px;
+            border: 1px solid rgba(99, 102, 241, 0.3);
+        }
+        .status {
+            font-weight: 600;
+            font-size: 14px;
+            color: #38bdf8;
+            margin-top: 16px;
+        }
+        .success {
+            color: #34d399 !important;
+        }
+        .error {
+            color: #f87171 !important;
+        }
+        .form-group {
+            text-align: left;
+            margin-bottom: 20px;
+        }
+        label {
+            display: block;
+            font-size: 12px;
+            font-weight: 600;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #94a3b8;
+            margin-bottom: 8px;
+        }
+        input {
+            width: 100%;
+            background: rgba(15, 23, 42, 0.6);
+            border: 1px solid rgba(255, 255, 255, 0.15);
+            border-radius: 12px;
+            padding: 12px 16px;
+            color: #ffffff;
+            font-size: 14px;
+            box-sizing: border-box;
+            outline: none;
+            transition: border-color 0.2s;
+        }
+        input:focus {
+            border-color: #6366f1;
+        }
+        button {
+            width: 100%;
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            border: none;
+            color: #ffffff;
+            font-size: 14px;
+            font-weight: 600;
+            padding: 14px;
+            border-radius: 12px;
+            cursor: pointer;
+            box-shadow: 0 4px 6px -1px rgba(79, 70, 229, 0.4);
+            transition: transform 0.1s, opacity 0.2s;
+        }
+        button:hover {
+            opacity: 0.9;
+        }
+        button:active {
+            transform: scale(0.98);
+        }
+        .loader {
+            border: 3px solid rgba(255, 255, 255, 0.1);
+            border-radius: 50%;
+            border-top: 3px solid #6366f1;
+            width: 24px;
+            height: 24px;
+            animation: spin 1s linear infinite;
+            margin: 20px auto;
+            display: none;
+        }
+        @keyframes spin {
+            0% { transform: rotate(0deg); }
+            100% { transform: rotate(360deg); }
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div id="setup-view" style="display: none;">
+            <div class="icon">🔑</div>
+            <h1>Token Setup Required</h1>
+            <p>To securely trigger updates in your repository without running a separate server, PulseDigest needs a GitHub Personal Access Token (PAT). This token is saved <strong>only in your browser's local storage</strong>.</p>
+            
+            <div class="form-group">
+                <label for="pat-input">Personal Access Token (classic)</label>
+                <input type="password" id="pat-input" placeholder="ghp_xxxxxxxxxxxxxxxxxxxxxxxx">
+                <span style="font-size: 11px; color: #64748b; display: block; margin-top: 6px;">Must have the <strong>repo</strong> scope enabled.</span>
+            </div>
+            
+            <button onclick="saveToken()">Save Token & Submit Feedback</button>
+        </div>
+
+        <div id="status-view">
+            <div class="icon" id="status-icon">📬</div>
+            <div class="badge" id="item-badge">PulseDigest Feedback</div>
+            <h1 id="status-title">Sending Feedback...</h1>
+            <p id="status-desc">Applying your feedback to tune recommendations.</p>
+            
+            <div class="loader" id="loader"></div>
+            <div id="status-msg" class="status">Initializing connection...</div>
+        </div>
+    </div>
+
+    <script>
+        // Extract URL params
+        const params = new URLSearchParams(window.location.search);
+        const item = params.get('item') || 'Unknown Item';
+        const type = params.get('type'); // 'interest' or 'author'
+        const target = params.get('target'); // 'tech', 'Cate Hall', etc.
+        const feedback = params.get('feedback'); // 'yes' or 'no'
+
+        // Constants from path or URL parameters
+        const owner = params.get('owner') || window.location.hostname.split('.')[0] || 'jungd';
+        const repo = params.get('repo') || window.location.pathname.split('/')[1] || 'pulsedigest';
+
+        document.getElementById('item-badge').innerText = item;
+
+        function checkSetup() {
+            const pat = localStorage.getItem('github_pat');
+            if (!pat) {
+                document.getElementById('status-view').style.display = 'none';
+                document.getElementById('setup-view').style.display = 'block';
+            } else {
+                submitFeedback(pat);
+            }
+        }
+
+        function saveToken() {
+            const input = document.getElementById('pat-input').value.strip ? document.getElementById('pat-input').value.strip() : document.getElementById('pat-input').value;
+            const pat = input.trim();
+            if (!pat) {
+                alert('Please enter a valid token.');
+                return;
+            }
+            localStorage.setItem('github_pat', pat);
+            document.getElementById('setup-view').style.display = 'none';
+            document.getElementById('status-view').style.display = 'block';
+            submitFeedback(pat);
+        }
+
+        function submitFeedback(pat) {
+            if (!type || !target || !feedback) {
+                showError("Invalid URL parameters. Cannot process feedback.");
+                return;
+            }
+
+            document.getElementById('loader').style.display = 'block';
+            document.getElementById('status-msg').innerText = "Connecting to GitHub API...";
+
+            const url = `https://api.github.com/repos/${owner}/${repo}/dispatches`;
+            const payload = {
+                event_type: "feedback",
+                client_payload: {
+                    type: type,
+                    target: target,
+                    feedback: feedback
+                }
+            };
+
+            fetch(url, {
+                method: 'POST',
+                headers: {
+                    'Authorization': `token ${pat}`,
+                    'Accept': 'application/vnd.github.v3+json',
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(payload)
+            })
+            .then(response => {
+                document.getElementById('loader').style.display = 'none';
+                if (response.status === 204) {
+                    showSuccess();
+                } else if (response.status === 401 || response.status === 403) {
+                    localStorage.removeItem('github_pat');
+                    showError("Authentication failed. The token might be invalid or expired. Resetting setup...");
+                    setTimeout(() => checkSetup(), 2000);
+                } else {
+                    showError(`Failed to update. GitHub API returned status: ${response.status}`);
+                }
+            })
+            .catch(err => {
+                document.getElementById('loader').style.display = 'none';
+                showError(`Network error: ${err.message}`);
+            });
+        }
+
+        function showSuccess() {
+            document.getElementById('status-icon').innerText = "✨";
+            document.getElementById('status-title').innerText = "Feedback Saved!";
+            document.getElementById('status-desc').innerText = `Preferences updated: your interest/author rating for "${target}" has been tuned.`;
+            
+            const msgNode = document.getElementById('status-msg');
+            msgNode.className = "status success";
+            msgNode.innerText = "GitHub Workflow Triggered Successfully.";
+        }
+
+        function showError(msg) {
+            document.getElementById('status-icon').innerText = "⚠️";
+            document.getElementById('status-title').innerText = "Process Failed";
+            document.getElementById('status-desc').innerText = "We ran into an issue submitting your feedback to the repository.";
+            
+            const msgNode = document.getElementById('status-msg');
+            msgNode.className = "status error";
+            msgNode.innerText = msg;
+        }
+
+        // Run on load
+        checkSetup();
+    </script>
+</body>
+</html>

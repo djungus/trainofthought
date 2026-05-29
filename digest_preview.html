@@ -1,0 +1,668 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>TrainOfThought</title>
+    <style>
+        /* General Reset */
+        body, p, h1, h2, h3, h4, ul, li {
+            margin: 0;
+            padding: 0;
+            list-style: none;
+        }
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+            background-color: #f1f5f9;
+            color: #1e293b;
+            line-height: 1.6;
+            padding: 24px 16px;
+        }
+        a {
+            color: #4f46e5;
+            text-decoration: none;
+        }
+        a:hover {
+            text-decoration: underline;
+        }
+        
+        .container {
+            max-width: 740px;
+            margin: 0 auto;
+        }
+        
+        /* Header */
+        .header {
+            background: linear-gradient(135deg, #4f46e5, #7c3aed);
+            padding: 36px 24px;
+            text-align: center;
+            color: #ffffff;
+            border-radius: 16px;
+            box-shadow: 0 4px 12px rgba(79, 70, 229, 0.15);
+            margin-bottom: 20px;
+        }
+        .logo {
+            font-size: 28px;
+            font-weight: 800;
+            letter-spacing: -0.03em;
+            margin-bottom: 4px;
+        }
+        .date-line {
+            font-size: 14px;
+            opacity: 0.9;
+            font-weight: 500;
+            letter-spacing: 0.05em;
+            text-transform: uppercase;
+        }
+
+        /* Greeting card */
+        .greeting-card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-left: 5px solid #4f46e5;
+            padding: 20px 24px;
+            border-radius: 12px;
+            margin-bottom: 20px;
+            font-size: 15px;
+            color: #475569;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+
+        /* Sidequest Card */
+        .sidequest-card {
+            background-color: #fffbeb;
+            border: 1px solid #fde68a;
+            border-left: 5px solid #d97706;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .sidequest-header {
+            display: flex;
+            align-items: center;
+            margin-bottom: 10px;
+        }
+        .sidequest-icon {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+        .sidequest-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #b45309;
+        }
+        .sidequest-query {
+            font-size: 16px;
+            font-weight: 600;
+            color: #1e293b;
+            margin-bottom: 8px;
+        }
+        .sidequest-leads {
+            font-size: 13px;
+            color: #475569;
+            padding-left: 20px;
+        }
+        .sidequest-leads li {
+            list-style-type: disc;
+            margin-bottom: 6px;
+        }
+
+        /* Dashboard Grid */
+        .grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 20px;
+        }
+        .col-left {
+            flex: 1 1 360px;
+            min-width: 320px;
+        }
+        .col-right {
+            flex: 1 1 320px;
+            min-width: 300px;
+        }
+
+        /* Cards */
+        .card {
+            background-color: #ffffff;
+            border: 1px solid #e2e8f0;
+            border-radius: 12px;
+            padding: 20px;
+            margin-bottom: 20px;
+            box-shadow: 0 4px 6px -1px rgba(0, 0, 0, 0.05);
+        }
+        .card-header {
+            display: flex;
+            align-items: center;
+            border-bottom: 2px solid #f1f5f9;
+            padding-bottom: 10px;
+            margin-bottom: 16px;
+        }
+        .card-icon {
+            font-size: 18px;
+            margin-right: 8px;
+        }
+        .card-title {
+            font-size: 14px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            color: #64748b;
+        }
+
+        /* Article list */
+        .article {
+            margin-bottom: 18px;
+            padding-bottom: 14px;
+            border-bottom: 1px solid #f1f5f9;
+        }
+        .article:last-child {
+            border-bottom: none;
+            margin-bottom: 0;
+            padding-bottom: 0;
+        }
+        .tag {
+            display: inline-block;
+            font-size: 9px;
+            font-weight: 700;
+            text-transform: uppercase;
+            letter-spacing: 0.05em;
+            padding: 2px 6px;
+            border-radius: 4px;
+            margin-bottom: 6px;
+        }
+        .tag-read { background-color: #e0e7ff; color: #4338ca; }
+        .tag-local { background-color: #ecfdf5; color: #047857; }
+        .tag-medicine { background-color: #fdf2f8; color: #be185d; }
+        .tag-tech { background-color: #fff7ed; color: #c2410c; }
+        
+        .article h3 {
+            font-size: 15px;
+            font-weight: 600;
+            margin-bottom: 4px;
+            line-height: 1.4;
+        }
+        .article h3 a {
+            color: #1e293b;
+        }
+        .article h3 a:hover {
+            color: #4f46e5;
+            text-decoration: none;
+        }
+        .article p {
+            font-size: 13px;
+            color: #64748b;
+            line-height: 1.5;
+            margin-bottom: 6px;
+        }
+        .article-meta {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            font-size: 11px;
+            color: #94a3b8;
+        }
+
+        /* Deal Items */
+        .deal-item {
+            background-color: #f8fafc;
+            border: 1px solid #e2e8f0;
+            border-radius: 8px;
+            padding: 12px;
+            margin-bottom: 12px;
+        }
+        .deal-item:last-child {
+            margin-bottom: 0;
+        }
+        .deal-header {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            margin-bottom: 4px;
+        }
+        .deal-title {
+            font-size: 13px;
+            font-weight: 600;
+            color: #334155;
+            margin-right: 8px;
+        }
+        .deal-title a {
+            color: #334155;
+        }
+        .deal-badge {
+            background-color: #ef4444;
+            color: #ffffff;
+            font-size: 10px;
+            font-weight: 700;
+            padding: 2px 6px;
+            border-radius: 4px;
+            white-space: nowrap;
+        }
+        .deal-prices {
+            font-size: 12px;
+            color: #475569;
+            margin-bottom: 6px;
+        }
+        .price-used {
+            font-weight: 700;
+            color: #0f766e;
+        }
+        .price-new {
+            text-decoration: line-through;
+            color: #94a3b8;
+            margin-left: 6px;
+        }
+        
+        /* Feedback Controls */
+        .feedback-container {
+            display: flex;
+            gap: 6px;
+            align-items: center;
+            font-size: 10px;
+            color: #94a3b8;
+            margin-top: 4px;
+        }
+        .feedback-btn {
+            display: inline-flex;
+            align-items: center;
+            padding: 2px 6px;
+            border-radius: 4px;
+            border: 1px solid #e2e8f0;
+            background-color: #ffffff;
+            color: #64748b;
+            font-size: 10px;
+            text-decoration: none !important;
+        }
+        .feedback-btn:hover {
+            background-color: #f1f5f9;
+            color: #334155;
+            border-color: #cbd5e1;
+        }
+
+        /* Empty states */
+        .empty-state {
+            font-size: 13px;
+            color: #94a3b8;
+            font-style: italic;
+            text-align: center;
+            padding: 16px 0;
+        }
+
+        /* Footer */
+        .footer {
+            text-align: center;
+            padding: 28px 24px;
+            font-size: 12px;
+            color: #94a3b8;
+            border-top: 1px solid #e2e8f0;
+            margin-top: 20px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <!-- Logo Header -->
+        <div class="header">
+            <div class="logo">TrainOfThought</div>
+            <div class="date-line">May 28, 2026</div>
+        </div>
+
+        <!-- AI Curation Greeting -->
+        <div class="greeting-card">
+            Good morning! Welcome to your twice-weekly TrainOfThought. We've compiled the latest updates in medicine, local Boston/Ithaca news, tech developments, and custom hobby deals.
+        </div>
+
+        <!-- Sidequest Card (Conditional) -->
+        
+        <div class="sidequest-card">
+            <div class="sidequest-header">
+                <span class="sidequest-icon">🎯</span>
+                <span class="sidequest-title">Active Sidequest</span>
+            </div>
+            <div class="sidequest-query">2 Chicago Noah Kahan tickets</div>
+            <ul class="sidequest-leads">
+                <li>No new active alerts or ticket postings for '2 Chicago Noah Kahan tickets' found this week. Curation engine is still monitoring Google News and Reddit searches.</li>
+            </ul>
+        </div>
+        
+
+        <!-- Dashboard Layout Grid -->
+        <div class="grid">
+            
+            <!-- Left Column -->
+            <div class="col-left">
+                <!-- Suggested Reading Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">📖</span>
+                        <span class="card-title">Suggested Reading</span>
+                    </div>
+                    
+            <div class="article">
+                <span class="tag tag-read">Farnam Street</span>
+                <h3><a href="https://fs.blog/knowledge-project-podcast/mark-pincus/">Proven, Better, New: Mark Pincus on the Rules of Innovation</a></h3>
+                <p>Recommended based on your discovery feed matches.</p>
+                <div class="article-meta">
+                    <span>Feedback:</span>
+                    <div class="feedback-container">
+                        <a href="https://jungd.github.io/trainofthought/feedback.html?item=Proven%2C+Better%2C+New%3A+Mark+Pincus+on+the+Rules+of+Innovation&type=interest&target=physical+books&feedback=yes&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👍 Yes</a>
+                        <a href="https://jungd.github.io/trainofthought/feedback.html?item=Proven%2C+Better%2C+New%3A+Mark+Pincus+on+the+Rules+of+Innovation&type=interest&target=physical+books&feedback=no&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👎 No</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-read">Astral Codex Ten</span>
+                <h3><a href="https://www.astralcodexten.com/p/hidden-open-thread-4355">Hidden Open Thread 435.5</a></h3>
+                <p>Recommended based on your discovery feed matches.</p>
+                <div class="article-meta">
+                    <span>Feedback:</span>
+                    <div class="feedback-container">
+                        <a href="https://jungd.github.io/trainofthought/feedback.html?item=Hidden+Open+Thread+435.5&type=interest&target=physical+books&feedback=yes&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👍 Yes</a>
+                        <a href="https://jungd.github.io/trainofthought/feedback.html?item=Hidden+Open+Thread+435.5&type=interest&target=physical+books&feedback=no&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👎 No</a>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-read">Astral Codex Ten</span>
+                <h3><a href="https://www.astralcodexten.com/p/use-ai-this-election">Use AI This Election</a></h3>
+                <p>Recommended based on your discovery feed matches.</p>
+                <div class="article-meta">
+                    <span>Feedback:</span>
+                    <div class="feedback-container">
+                        <a href="https://jungd.github.io/trainofthought/feedback.html?item=Use+AI+This+Election&type=interest&target=physical+books&feedback=yes&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👍 Yes</a>
+                        <a href="https://jungd.github.io/trainofthought/feedback.html?item=Use+AI+This+Election&type=interest&target=physical+books&feedback=no&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👎 No</a>
+                    </div>
+                </div>
+            </div>
+            
+                </div>
+
+                <!-- Medicine & Research Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">🔬</span>
+                        <span class="card-title">Medicine & Research</span>
+                    </div>
+                    
+            <div class="article">
+                <span class="tag tag-medicine">NEJM (Google News)</span>
+                <h3><a href="https://news.google.com/rss/articles/CBMiYEFVX3lxTE5zbkc3ZTUxZ2E5cE56dEE2Z3pESEppWDNjTDkydkFIV1RHUmRYNmNxNjVDeXVtZmgwRmt4aERobHMyNzNBenZtX3VFdGRDLUo4cmsyWWdrMHNydGRLY0hTYw?oc=5">Zanidatamab with and without Tislelizumab in HER2-Positive Gastroesophageal Cancer - The New England Journal of Medicine</a></h3>
+                <span class="article-meta">May 27</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-medicine">NEJM (Google News)</span>
+                <h3><a href="https://news.google.com/rss/articles/CBMiYEFVX3lxTFBiV01ORHBrNi01ejRpOHB5LWdYZFFFRkVqYmRZc0wwX09WNkw2ZFJRTmZjZ0FKcjgzOGwtMy1DSjg5RXdjZ2hXdUxLMDV3TWdfdGE2UjdYN1VnNHA5Z3JSbg?oc=5">Stem-Cell–Derived Biologic Ventricular Assist Tissue in Heart Failure - The New England Journal of Medicine</a></h3>
+                <span class="article-meta">May 27</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-medicine">NEJM (Google News)</span>
+                <h3><a href="https://news.google.com/rss/articles/CBMiX0FVX3lxTFBtNUEtYk9kNVpBVmhaWEZybTZybkdnOV9KOXZMVF9JQzVsTlB0OWtOUlI5Z2dsZzFHY1ZIUUJqWHh3QzcxeFJwbnQwdS1SMVkybUo2MndLN0c5ZGN4Ni1N?oc=5">The 2025–2030 Dietary Guidelines for Americans — Progress, Pitfalls, and the Path Forward - The New England Journal of Medicine</a></h3>
+                <span class="article-meta">May 23</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-medicine">JAMA (Google News)</span>
+                <h3><a href="https://news.google.com/rss/articles/CBMiaEFVX3lxTE5NVU5zalpIRzEyd2FPWE9VVlRPYktVcnRSTUplTXU3RkYyQlB1dVZ2U2FZWjlJN2lVdU1EeHBlVEhhT0tFRV9Ka0ZreVlkODhGNmI0aEFac0drSlhNRVNURjJOeEg3c1hk?oc=5">Adverse Pregnancy Outcomes and Sedentary Behavior, Light-Intensity Physical Activity, and Daily Steps - JAMA</a></h3>
+                <span class="article-meta">May 27</span>
+            </div>
+            
+                </div>
+
+                <!-- Local News Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">📍</span>
+                        <span class="card-title">Local News (Boston & Cornell)</span>
+                    </div>
+                    
+            <div class="article">
+                <span class="tag tag-local">The Ithaca Voice</span>
+                <h3><a href="https://ithacavoice.org/2026/05/haiti-creole-lisette-a-songs-journey/">The winding history of the first documented Haitian Creole song is traced in this new album</a></h3>
+                <p><figure><img width="400" height="267" src="https://i0.wp.com/ithacavoice.s3.amazonaws.com/ithacavoice/wp-content/uploads/2026/05/05_21_26_JB...</p>
+                <span class="article-meta">May 28</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-local">The Ithaca Voice</span>
+                <h3><a href="https://ithacavoice.org/2026/05/one-injured-after-fire-at-rodeway-inn/">One injured after fire at Rodeway Inn</a></h3>
+                <p><figure><img width="400" height="267" src="https://i0.wp.com/ithacavoice.s3.amazonaws.com/ithacavoice/wp-content/uploads/2026/05/05_27_26_Ro...</p>
+                <span class="article-meta">May 27</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-local">The Ithaca Voice</span>
+                <h3><a href="https://ithacavoice.org/2026/05/car-struck-pedestrian-hancock-safety-northside/">After a pedestrian was struck on Hancock Street, Northside residents call for traffic safety upgrades</a></h3>
+                <p><figure><img width="400" height="300" src="https://i0.wp.com/ithacavoice.s3.amazonaws.com/ithacavoice/wp-content/uploads/2026/05/Hancock-Str...</p>
+                <span class="article-meta">May 27</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-local">Boston.com Local</span>
+                <h3><a href="https://www.boston.com/news/crime/2026/05/28/mass-man-charged-for-fatal-hit-and-run-lowell/">Man charged in Lowell hit-and-run that killed woman, 29</a></h3>
+                <p><p>Guilherme Candido, 23, is charged with leaving the scene of personal injury and death following a fatal crash, records show.</p>
+<p>The p...</p>
+                <span class="article-meta">May 29</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-local">Boston.com Local</span>
+                <h3><a href="https://www.boston.com/news/local-news/2026/05/28/mass-detective-in-kayak-allegedly-shot-hole-in-canoe-with-his-brother-on-it/">Mass. detective, in kayak, allegedly shot hole in canoe with his brother on it</a></h3>
+                <p><p>James Miller, 52, allegedly fired at least one round of gunfire into the bottom of his brother's canoe, police said.</p>
+<p>The post <a h...</p>
+                <span class="article-meta">May 29</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-local">Boston.com Local</span>
+                <h3><a href="https://www.boston.com/news/local-news/2026/05/28/2-women-attempt-to-swim-from-marblehead-to-scituate-to-qualify-for-ireland-marathon-swims/">2 women attempt to swim from Marblehead to Scituate to qualify for Ireland marathon swims</a></h3>
+                <p><p>The swimmers were met with wind and choppy water, causing their 18-mile swim to stop short.</p>
+<p>The post <a href="https://www.boston.c...</p>
+                <span class="article-meta">May 28</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-local">Boston Herald (Google News)</span>
+                <h3><a href="https://news.google.com/rss/articles/CBMiywFBVV95cUxQSThQa2pXSXBDWkN5ZlVzUGJGaFl4T09UQ2wzWUJWSFNKY2M2VFdMSUt4Nm1FX2NtX284am5wQTF2aEZwZTZFa2lwakk1VExjTFhOYkJhVUVJQUJoUUpBTUFic25HRFJHWkJtZkZsMVdKN0NXdkdOME01WmswN0k1dGFyU0tBWngzRjhaczBKT3REOVY3Q1hZVzllcnhaSUJCUzZMVzhTOWxZQk44NTktTDc2QURoS204aFkwMWhEU0x2V0t6aTJqNGZlcw?oc=5">Memorial Day on Cape Cod: Moments of silence for active troops stir a rift on regional body - Boston Herald</a></h3>
+                <p><a href="https://news.google.com/rss/articles/CBMiywFBVV95cUxQSThQa2pXSXBDWkN5ZlVzUGJGaFl4T09UQ2wzWUJWSFNKY2M2VFdMSUt4Nm1FX2NtX284am5wQTF2aE...</p>
+                <span class="article-meta">May 25</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-local">Boston Herald (Google News)</span>
+                <h3><a href="https://news.google.com/rss/articles/CBMiwAFBVV95cUxPaE9CT2pFWktsekJoblcxckItTHIyS3BwYnVZbGJNVDljdnE0bXNaOWFraHo4UE5lUi13bDRYcS04YzVXN0l5YTRvZUNLTjJhdXhPSWNaU21YUVN4RHNrY1poVGJEOUdIckljSDEtS2pUZWF5QWlMZ2ppWW5EeFlwYVZPMF9FbkxHNzJXUU5yMTR2dERxWU9CQXJZMnY4RzY5OEk4b1d4cmxCZUtmd19pOGkzdnVaYnlfTG5TTmVLeWI?oc=5">Christian Gonzalez absent from Patriots OTAs while eligible for contract extension - Boston Herald</a></h3>
+                <p><a href="https://news.google.com/rss/articles/CBMiwAFBVV95cUxPaE9CT2pFWktsekJoblcxckItTHIyS3BwYnVZbGJNVDljdnE0bXNaOWFraHo4UE5lUi13bDRYcS04Yz...</p>
+                <span class="article-meta">May 27</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-local">Boston Herald (Google News)</span>
+                <h3><a href="https://news.google.com/rss/articles/CBMi1wFBVV95cUxPbjZycWxvQ2ZOTWxFZGtkdG1xOUlKVVJkS05FelhyQnRCVndFekx5UXY1N3hPZnRXelhyY216NmpEUVFFdFBvTkoyNmtTMDI2aG1vM19YRmdCRmlmcEFyWTZDbDhUbWtQV05ZcHFwRjh0TVdnUG1nN0pya1NmSk5iYnQtMkwxcjlrYXJ6ZnBtY0ZaTV9vRVZpVjNoSFVjelo3eFpXd3ZSazdhVzhxd2FmbVE4WUp5dUl5RmdQckNJSlVzRXNKNWZuYllpbHdUZnJZWlBWUDVFUQ?oc=5">Massachusetts town cancels July 4th celebration as America celebrates 250th anniversary: 'Inexcusable' - Boston Herald</a></h3>
+                <p><a href="https://news.google.com/rss/articles/CBMi1wFBVV95cUxPbjZycWxvQ2ZOTWxFZGtkdG1xOUlKVVJkS05FelhyQnRCVndFekx5UXY1N3hPZnRXelhyY216NmpEUV...</p>
+                <span class="article-meta">May 27</span>
+            </div>
+            
+                </div>
+            </div>
+
+            <!-- Right Column -->
+            <div class="col-right">
+                <!-- Curated Deals & Hobbies Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">💰</span>
+                        <span class="card-title">Curated Deals & Hobbies</span>
+                    </div>
+                    
+            <div class="deal-item">
+                <div class="deal-header">
+                    <span class="deal-title"><a href="https://www.amazon.com/dp/B09G6LBRN2?tag=dealforager-20">Crampons Ice Cleats Traction Snow Grips for Boots Shoes Women Men Anti...</a></span>
+                    <span class="deal-badge">500% OFF</span>
+                </div>
+                <div class="deal-prices">
+                    <span class="price-used">Used: $22.78</span><span class="price-new">New: $26.98</span> | <span style="font-size: 10px; color:#64748b;">Category: rock climbing</span>
+                </div>
+                <div class="feedback-container">
+                    <span>Feedback:</span>
+                    <a href="https://jungd.github.io/trainofthought/feedback.html?item=Crampons+Ice+Cleats+Traction+Snow+Grips+for+Boots+Shoes+Women+Men+Anti+Slip+19+Stainless+Steel+Spikes+Safe+Protect+for+Hiking+Fishing+Walking+Climbing+Mountaineering&type=interest&target=rock+climbing&feedback=yes&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👍 Yes</a>
+                    <a href="https://jungd.github.io/trainofthought/feedback.html?item=Crampons+Ice+Cleats+Traction+Snow+Grips+for+Boots+Shoes+Women+Men+Anti+Slip+19+Stainless+Steel+Spikes+Safe+Protect+for+Hiking+Fishing+Walking+Climbing+Mountaineering&type=interest&target=rock+climbing&feedback=no&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👎 No</a>
+                </div>
+            </div>
+            
+            <div class="deal-item">
+                <div class="deal-header">
+                    <span class="deal-title"><a href="https://www.amazon.com/dp/B001J5BEQY?tag=dealforager-20">Lascar Electronics EL-USB-2-LCD+ High Accuracy Humidity Temperature an...</a></span>
+                    <span class="deal-badge">6100% OFF</span>
+                </div>
+                <div class="deal-prices">
+                    <span class="price-used">Used: $70.28</span><span class="price-new">New: $169.79</span> | <span style="font-size: 10px; color:#64748b;">Category: electronics</span>
+                </div>
+                <div class="feedback-container">
+                    <span>Feedback:</span>
+                    <a href="https://jungd.github.io/trainofthought/feedback.html?item=Lascar+Electronics+EL-USB-2-LCD%2B+High+Accuracy+Humidity+Temperature+and+Dew+Point+Data+Logger+with+LCD&type=interest&target=electronics&feedback=yes&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👍 Yes</a>
+                    <a href="https://jungd.github.io/trainofthought/feedback.html?item=Lascar+Electronics+EL-USB-2-LCD%2B+High+Accuracy+Humidity+Temperature+and+Dew+Point+Data+Logger+with+LCD&type=interest&target=electronics&feedback=no&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👎 No</a>
+                </div>
+            </div>
+            
+            <div class="deal-item">
+                <div class="deal-header">
+                    <span class="deal-title"><a href="https://www.amazon.com/dp/B0FD7SMZ5J?tag=dealforager-20">Japan National Volleyball Jersey, Ishikawa #14, Sewn Logo Flag Red and...</a></span>
+                    <span class="deal-badge">8300% OFF</span>
+                </div>
+                <div class="deal-prices">
+                    <span class="price-used">Used: $18.56</span><span class="price-new">New: $109.99</span> | <span style="font-size: 10px; color:#64748b;">Category: volleyball</span>
+                </div>
+                <div class="feedback-container">
+                    <span>Feedback:</span>
+                    <a href="https://jungd.github.io/trainofthought/feedback.html?item=Japan+National+Volleyball+Jersey%2C+Ishikawa+%2314%2C+Sewn+Logo+Flag+Red+and+Black+Colors+%28US%2C+Alpha%2C+Medium%2C+Regular%2C+Regular%2C+Black%29&type=interest&target=volleyball&feedback=yes&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👍 Yes</a>
+                    <a href="https://jungd.github.io/trainofthought/feedback.html?item=Japan+National+Volleyball+Jersey%2C+Ishikawa+%2314%2C+Sewn+Logo+Flag+Red+and+Black+Colors+%28US%2C+Alpha%2C+Medium%2C+Regular%2C+Regular%2C+Black%29&type=interest&target=volleyball&feedback=no&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👎 No</a>
+                </div>
+            </div>
+            
+            <div class="deal-item">
+                <div class="deal-header">
+                    <span class="deal-title"><a href="https://www.amazon.com/dp/B00369Q4ZC?tag=dealforager-20">Celestron Travel Scope 50 Portable Refractor Telescope – 50mm Aperture...</a></span>
+                    <span class="deal-badge">6200% OFF</span>
+                </div>
+                <div class="deal-prices">
+                    <span class="price-used">Used: $29.99</span><span class="price-new">New: $79.95</span> | <span style="font-size: 10px; color:#64748b;">Category: software</span>
+                </div>
+                <div class="feedback-container">
+                    <span>Feedback:</span>
+                    <a href="https://jungd.github.io/trainofthought/feedback.html?item=Celestron+Travel+Scope+50+Portable+Refractor+Telescope+%E2%80%93+50mm+Aperture%2C+Fully-Coated+Glass+Optics+%E2%80%93+Includes+Tripod%2C+Backpack+%26+Software+%E2%80%93+Ideal+for+Beginners+%26+Travel&type=interest&target=software&feedback=yes&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👍 Yes</a>
+                    <a href="https://jungd.github.io/trainofthought/feedback.html?item=Celestron+Travel+Scope+50+Portable+Refractor+Telescope+%E2%80%93+50mm+Aperture%2C+Fully-Coated+Glass+Optics+%E2%80%93+Includes+Tripod%2C+Backpack+%26+Software+%E2%80%93+Ideal+for+Beginners+%26+Travel&type=interest&target=software&feedback=no&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👎 No</a>
+                </div>
+            </div>
+            
+            <div class="deal-item">
+                <div class="deal-header">
+                    <span class="deal-title"><a href="https://www.amazon.com/dp/B0FDQJB7GS?tag=dealforager-20">Cucumber Trellis for Rasied Bed 31.5in x 68.9in, 6FT Garden Trellis fo...</a></span>
+                    <span class="deal-badge">6800% OFF</span>
+                </div>
+                <div class="deal-prices">
+                    <span class="price-used">Used: $18.11</span><span class="price-new">New: $57.99</span> | <span style="font-size: 10px; color:#64748b;">Category: rock climbing</span>
+                </div>
+                <div class="feedback-container">
+                    <span>Feedback:</span>
+                    <a href="https://jungd.github.io/trainofthought/feedback.html?item=Cucumber+Trellis+for+Rasied+Bed+31.5in+x+68.9in%2C+6FT+Garden+Trellis+for+Climbing+Plants+Outdoor+with+Net%2C+Gloves%2C+Zip+Ties%2C+Foldable+A-Frame+Metal+Trellises+for+Vegetable+Tomato+Squash&type=interest&target=rock+climbing&feedback=yes&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👍 Yes</a>
+                    <a href="https://jungd.github.io/trainofthought/feedback.html?item=Cucumber+Trellis+for+Rasied+Bed+31.5in+x+68.9in%2C+6FT+Garden+Trellis+for+Climbing+Plants+Outdoor+with+Net%2C+Gloves%2C+Zip+Ties%2C+Foldable+A-Frame+Metal+Trellises+for+Vegetable+Tomato+Squash&type=interest&target=rock+climbing&feedback=no&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👎 No</a>
+                </div>
+            </div>
+            
+            <div class="deal-item">
+                <div class="deal-header">
+                    <span class="deal-title"><a href="https://www.amazon.com/dp/B074CMZ2XF?tag=dealforager-20">Metabo 6-Inch Angle Grinder, 9,600 RPM, 13.2 Amp with Electronics,AC/D...</a></span>
+                    <span class="deal-badge">5300% OFF</span>
+                </div>
+                <div class="deal-prices">
+                    <span class="price-used">Used: $107.85</span><span class="price-new">New: $230.00</span> | <span style="font-size: 10px; color:#64748b;">Category: electronics</span>
+                </div>
+                <div class="feedback-container">
+                    <span>Feedback:</span>
+                    <a href="https://jungd.github.io/trainofthought/feedback.html?item=Metabo+6-Inch+Angle+Grinder%2C+9%2C600+RPM%2C+13.2+Amp+with+Electronics%2CAC%2FDC%2C+Lock-on+Slide+Switch%2C+Rat+Tail%2C+Tool-free+Adjustable+Guard%2C+WE+1500-150+RT%2C+601242420%2C+Green&type=interest&target=electronics&feedback=yes&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👍 Yes</a>
+                    <a href="https://jungd.github.io/trainofthought/feedback.html?item=Metabo+6-Inch+Angle+Grinder%2C+9%2C600+RPM%2C+13.2+Amp+with+Electronics%2CAC%2FDC%2C+Lock-on+Slide+Switch%2C+Rat+Tail%2C+Tool-free+Adjustable+Guard%2C+WE+1500-150+RT%2C+601242420%2C+Green&type=interest&target=electronics&feedback=no&owner=jungd&repo=trainofthought" class="feedback-btn" target="_blank">👎 No</a>
+                </div>
+            </div>
+            
+                </div>
+
+                <!-- Tech & Finance Card -->
+                <div class="card">
+                    <div class="card-header">
+                        <span class="card-icon">📈</span>
+                        <span class="card-title">Tech & Finance</span>
+                    </div>
+                    
+            <div class="article">
+                <span class="tag tag-tech">Hacker News</span>
+                <h3><a href="https://www.bbc.com/future/article/20260513-your-car-is-spying-on-you-its-about-to-get-worse">Cars are trying to spy on you, and it's only just the beginning</a></h3>
+                <span class="article-meta">May 29</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-tech">Hacker News</span>
+                <h3><a href="https://www.anthropic.com/news/claude-opus-4-8">Claude Opus 4.8</a></h3>
+                <span class="article-meta">May 28</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-tech">Hacker News</span>
+                <h3><a href="https://mybricklog.com/blog/bricks-minifigs-corporate-stole-old-mans-200000-lego-collection">Bricks and Minifigs Stole a Man's $200k Lego Collection</a></h3>
+                <span class="article-meta">May 28</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-tech">TechCrunch</span>
+                <h3><a href="https://techcrunch.com/2026/05/28/blue-origins-new-glenn-rocket-explodes-during-testing-in-florida/">Blue Origin’s New Glenn rocket explodes during testing in Florida</a></h3>
+                <span class="article-meta">May 29</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-tech">TechCrunch</span>
+                <h3><a href="https://techcrunch.com/2026/05/28/gleans-top-line-crosses-300m-as-ai-budget-cutting-becomes-its-major-selling-point/">Glean’s top line crosses $300M as AI budget-cutting becomes its major selling point</a></h3>
+                <span class="article-meta">May 29</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-tech">TechCrunch</span>
+                <h3><a href="https://techcrunch.com/2026/05/28/waymo-dominates-texas-autonomous-vehicle-registrations-as-tesla-trails-behind/">Waymo dominates autonomous vehicle registrations as Tesla trails behind</a></h3>
+                <span class="article-meta">May 29</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-tech">Yahoo Finance</span>
+                <h3><a href="https://finance.yahoo.com/markets/stocks/articles/capri-q4-earnings-call-highlights-151627510.html">Capri Q4 Earnings Call Highlights</a></h3>
+                <span class="article-meta">May 27</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-tech">Yahoo Finance</span>
+                <h3><a href="https://finance.yahoo.com/markets/stocks/articles/stocks-mixed-awaiting-fresh-iran-151733316.html">Stocks Mixed Awaiting Fresh Iran News</a></h3>
+                <span class="article-meta">May 27</span>
+            </div>
+            
+            <div class="article">
+                <span class="tag tag-tech">Yahoo Finance</span>
+                <h3><a href="https://finance.yahoo.com/markets/stocks/articles/dear-coreweave-stock-fans-mark-152451819.html">Dear CoreWeave Stock Fans, Mark Your Calendars for June 26</a></h3>
+                <span class="article-meta">May 27</span>
+            </div>
+            
+                </div>
+            </div>
+            
+        </div>
+
+        <!-- Footer -->
+        <div class="footer">
+            <p>Curated automatically for you by TrainOfThought.</p>
+            <p style="margin-top: 8px;">To manage settings or adjust weights, edit <code>config.json</code> in your repository.</p>
+        </div>
+    </div>
+</body>
+</html>
